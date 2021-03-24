@@ -1,0 +1,9 @@
+vendor/
+main
+
+*.swp
+*.swo
+
+*.bak*
+*.orig*
+*.diff

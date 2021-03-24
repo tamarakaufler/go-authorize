@@ -72,7 +72,7 @@ func authHandler(w http.ResponseWriter, req *http.Request) {
 	})
 }
 
-func validateTokenMiddleware(next http.HandlerFunc) http.HandlerFunc {
+func tokenValidationMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		authorizationHeader := req.Header.Get("authorization")
 		if authorizationHeader != "" {
@@ -101,15 +101,15 @@ func validateTokenMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 					context.Set(req, "claims", tok.Claims)
 					next(w, req)
-				} else {
-					json.NewEncoder(w).Encode(Error{Message: "invalid token"})
+					return
 				}
-			} else {
 				json.NewEncoder(w).Encode(Error{Message: "invalid token"})
+				return
 			}
-		} else {
-			json.NewEncoder(w).Encode(Error{Message: "authorization header required"})
+			json.NewEncoder(w).Encode(Error{Message: "invalid token"})
+			return
 		}
+		json.NewEncoder(w).Encode(Error{Message: "authorization header required"})
 	})
 }
 
@@ -126,7 +126,7 @@ func main() {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/authenticate", authHandler).Methods("POST")
-	router.HandleFunc("/users/{username}/creds", validateTokenMiddleware(users)).Methods("GET")
+	router.HandleFunc("/users/{username}/creds", tokenValidationMiddleware(users)).Methods("GET")
 
 	if err := http.ListenAndServe(":8888", router); err != http.ErrServerClosed {
 		log.Fatalf("error while listening: %s\n", err.Error())

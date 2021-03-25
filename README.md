@@ -14,7 +14,7 @@ http://localhost:8080/authorize
 http://localhost:8080/users/{username}/articles
 
     example of using JWT verifying
-    middleware, uses error message and code to identify encountered
+    middleware, use of error message and code to identify encountered
     problems
 
 Implementation uses:

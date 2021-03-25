@@ -2,6 +2,7 @@ package error
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 )
 
@@ -25,12 +26,15 @@ const (
 	DecodingError
 )
 
-func EncodeError(w io.Writer, err error, code Code) error {
-	return json.NewEncoder(w).Encode(
+func EncodeError(w io.Writer, err error, code Code) {
+	errE := json.NewEncoder(w).Encode(
 		Error{
 			Message: err.Error(),
 			Type:    code.String(),
 			Code:    code,
 		},
 	)
+	if errE != nil {
+		fmt.Fprint(w, "error encoding error message: ", err.Error())
+	}
 }

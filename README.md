@@ -1,8 +1,9 @@
 # go-authorize
 
-Example of:
+## Synopsis
 
+- code quality ckeck using golangci-lint
+- enum generation using go generate tool and stringer
 - JWT creation and verification
-- enum generation using go generate tool
 - using Visual Studio REST Client extension to test the API
 

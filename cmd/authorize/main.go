@@ -58,10 +58,7 @@ func authHandler(w http.ResponseWriter, req *http.Request) {
 
 	tokS, err := tok.SignedString([]byte("secret"))
 	if err != nil {
-		errM := authErr.EncodeError(w, err, authErr.EncodingError)
-		if errM != nil {
-			fmt.Fprint(w, "error encoding error message ", err.Error())
-		}
+		authErr.EncodeError(w, err, authErr.EncodingError)
 		return
 	}
 
@@ -72,10 +69,7 @@ func authHandler(w http.ResponseWriter, req *http.Request) {
 		ExpiresIn: expiresAt,
 	})
 	if err != nil {
-		errM := authErr.EncodeError(w, err, authErr.EncodingError)
-		if errM != nil {
-			fmt.Fprint(w, "error encoding error message ", err.Error())
-		}
+		authErr.EncodeError(w, err, authErr.EncodingError)
 		return
 	}
 }
@@ -97,29 +91,20 @@ func tokenValidation(next http.HandlerFunc) http.HandlerFunc {
 					return []byte("secret"), nil
 				})
 				if err != nil {
-					errM := authErr.EncodeError(w, err, authErr.ParsingJWTError)
-					if errM != nil {
-						fmt.Fprint(w, "error encoding error message ", err.Error())
-					}
+					authErr.EncodeError(w, err, authErr.ParsingJWTError)
 					return
 				}
 				if tok.Valid {
 					var user User
 					err := mapstructure.Decode(tok.Claims, &user)
 					if err != nil {
-						errM := authErr.EncodeError(w, err, authErr.DecodingError)
-						if errM != nil {
-							fmt.Fprint(w, "error encoding error message ", err.Error())
-						}
+						authErr.EncodeError(w, err, authErr.DecodingError)
 						return
 					}
 					vars := mux.Vars(req)
 					userN := vars["username"]
 					if userN != user.Username {
-						errM := authErr.EncodeError(w, err, authErr.UserMatchError)
-						if errM != nil {
-							fmt.Fprint(w, "error encoding error message ", errM.Error())
-						}
+						authErr.EncodeError(w, err, authErr.UserMatchError)
 						return
 					}
 
@@ -127,35 +112,31 @@ func tokenValidation(next http.HandlerFunc) http.HandlerFunc {
 					next(w, req)
 					return
 				}
-				errM := authErr.EncodeError(w, err, authErr.InvalidTokenError)
-				if errM != nil {
-					fmt.Fprint(w, "error encoding error message ", errM.Error())
-				}
+				authErr.EncodeError(w, err, authErr.InvalidTokenError)
 				return
 			}
-			errM := authErr.EncodeError(w, errors.New("bearer token length incorrect"), authErr.InvalidTokenError)
-			if errM != nil {
-				fmt.Fprint(w, "error encoding error message ", errM.Error())
-			}
+			authErr.EncodeError(w, errors.New("bearer token length incorrect"), authErr.InvalidTokenError)
 			return
 		}
-		errM := authErr.EncodeError(w, errors.New("authorization header missing"), authErr.MissingAuthHeaderError)
-		if errM != nil {
-			fmt.Fprint(w, "error encoding error message ", errM.Error())
-		}
+		authErr.EncodeError(w, errors.New("missing authorization header"), authErr.MissingAuthHeaderError)
 	})
 }
 
+// users
 func users(w http.ResponseWriter, req *http.Request) {
 	decoded := context.Get(req, "claims")
 	var user User
+
 	err := mapstructure.Decode(decoded.(jwt.MapClaims), &user)
 	if err != nil {
-		fmt.Fprint(w, "error decoding error message ", err.Error())
+		authErr.EncodeError(w, err, authErr.InvalidTokenError)
+		return
 	}
+
 	err = json.NewEncoder(w).Encode(user)
 	if err != nil {
-		fmt.Fprint(w, "error encoding error message ", err.Error())
+		authErr.EncodeError(w, err, authErr.InvalidTokenError)
+		return
 	}
 }
 

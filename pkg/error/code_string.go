@@ -9,16 +9,17 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[SigningMethodError-1000]
-	_ = x[EncodingError-1001]
-	_ = x[DecodingError-1002]
-	_ = x[ParsingJWTError-1003]
-	_ = x[UserMatchError-1004]
-	_ = x[InvalidTokenError-1005]
+	_ = x[MissingAuthHeaderError-1001]
+	_ = x[ParsingJWTError-1002]
+	_ = x[UserMatchError-1003]
+	_ = x[InvalidTokenError-1004]
+	_ = x[EncodingError-1005]
+	_ = x[DecodingError-1006]
 }
 
-const _Code_name = "SigningMethodErrorEncodingErrorDecodingErrorParsingJWTErrorUserMatchErrorInvalidTokenError"
+const _Code_name = "SigningMethodErrorMissingAuthHeaderErrorParsingJWTErrorUserMatchErrorInvalidTokenErrorEncodingErrorDecodingError"
 
-var _Code_index = [...]uint8{0, 18, 31, 44, 59, 73, 90}
+var _Code_index = [...]uint8{0, 18, 40, 55, 69, 86, 99, 112}
 
 func (i Code) String() string {
 	i -= 1000

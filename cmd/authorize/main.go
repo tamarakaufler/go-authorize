@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -13,6 +14,8 @@ import (
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"github.com/mitchellh/mapstructure"
+
+	authErr "github.com/tamarakaufler/go-authorize/pkg/error"
 )
 
 // User holds authentication details.
@@ -32,12 +35,6 @@ type JWTToken struct {
 type JWTTokenClaims struct {
 	*jwt.StandardClaims
 	User
-}
-
-// Error contains error message.
-type Error struct {
-	Message string `json:"message"`
-	Code    int    `json:"code"`
 }
 
 // authHandler is fired when authenticating a user, using the POST
@@ -61,7 +58,10 @@ func authHandler(w http.ResponseWriter, req *http.Request) {
 
 	tokS, err := tok.SignedString([]byte("secret"))
 	if err != nil {
-		fmt.Fprint(w, "error occurred during authentication")
+		errM := authErr.EncodeError(w, err, authErr.EncodingError)
+		if errM != nil {
+			fmt.Fprint(w, "error encoding error message ", err.Error())
+		}
 		return
 	}
 
@@ -72,13 +72,17 @@ func authHandler(w http.ResponseWriter, req *http.Request) {
 		ExpiresIn: expiresAt,
 	})
 	if err != nil {
-		fmt.Fprint(w, "error occurred during JWT encoding")
+		errM := authErr.EncodeError(w, err, authErr.EncodingError)
+		if errM != nil {
+			fmt.Fprint(w, "error encoding error message ", err.Error())
+		}
 		return
 	}
 }
 
 //nolint:nestif
-func tokenValidationMiddleware(next http.HandlerFunc) http.HandlerFunc {
+// tokenValidation is middleware asserting validity of the JWL token.
+func tokenValidation(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		authorizationHeader := req.Header.Get("authorization")
 		if authorizationHeader != "" {
@@ -87,12 +91,13 @@ func tokenValidationMiddleware(next http.HandlerFunc) http.HandlerFunc {
 				tok, err := jwt.Parse(bearerToken[1], func(token *jwt.Token) (interface{}, error) {
 					_, ok := token.Method.(*jwt.SigningMethodHMAC)
 					if !ok {
-						return nil, errors.New("error while parsing JWT")
+						return nil, errors.New(
+							authErr.SigningMethodError.String() + " " + strconv.Itoa(int(authErr.SigningMethodError)))
 					}
 					return []byte("secret"), nil
 				})
 				if err != nil {
-					errM := json.NewEncoder(w).Encode(Error{Message: err.Error()})
+					errM := authErr.EncodeError(w, err, authErr.ParsingJWTError)
 					if errM != nil {
 						fmt.Fprint(w, "error encoding error message ", err.Error())
 					}
@@ -102,14 +107,18 @@ func tokenValidationMiddleware(next http.HandlerFunc) http.HandlerFunc {
 					var user User
 					err := mapstructure.Decode(tok.Claims, &user)
 					if err != nil {
-						fmt.Fprint(w, "error decoding error message ", err.Error())
+						errM := authErr.EncodeError(w, err, authErr.DecodingError)
+						if errM != nil {
+							fmt.Fprint(w, "error encoding error message ", err.Error())
+						}
+						return
 					}
 					vars := mux.Vars(req)
 					userN := vars["username"]
 					if userN != user.Username {
-						errM := json.NewEncoder(w).Encode(Error{Message: "invalid token - username does not match"})
+						errM := authErr.EncodeError(w, err, authErr.UserMatchError)
 						if errM != nil {
-							fmt.Fprint(w, "error encoding error message ", err.Error())
+							fmt.Fprint(w, "error encoding error message ", errM.Error())
 						}
 						return
 					}
@@ -118,21 +127,21 @@ func tokenValidationMiddleware(next http.HandlerFunc) http.HandlerFunc {
 					next(w, req)
 					return
 				}
-				err = json.NewEncoder(w).Encode(Error{Message: "invalid token"})
-				if err != nil {
-					fmt.Fprint(w, "error encoding error message ", err.Error())
+				errM := authErr.EncodeError(w, err, authErr.InvalidTokenError)
+				if errM != nil {
+					fmt.Fprint(w, "error encoding error message ", errM.Error())
 				}
 				return
 			}
-			err := json.NewEncoder(w).Encode(Error{Message: "invalid token"})
-			if err != nil {
-				fmt.Fprint(w, "error encoding error message ", err.Error())
+			errM := authErr.EncodeError(w, errors.New("bearer token length incorrect"), authErr.InvalidTokenError)
+			if errM != nil {
+				fmt.Fprint(w, "error encoding error message ", errM.Error())
 			}
 			return
 		}
-		err := json.NewEncoder(w).Encode(Error{Message: "authorization header required"})
-		if err != nil {
-			fmt.Fprint(w, "error encoding error message ", err.Error())
+		errM := authErr.EncodeError(w, errors.New("authorization header missing"), authErr.MissingAuthHeaderError)
+		if errM != nil {
+			fmt.Fprint(w, "error encoding error message ", errM.Error())
 		}
 	})
 }
@@ -156,7 +165,7 @@ func main() {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/authorize", authHandler).Methods("POST")
-	router.HandleFunc("/users/{username}/articles", tokenValidationMiddleware(users)).Methods("GET")
+	router.HandleFunc("/users/{username}/articles", tokenValidation(users)).Methods("GET")
 
 	if err := http.ListenAndServe(host, router); err != http.ErrServerClosed {
 		log.Fatalf("error while listening: %s\n", err.Error())

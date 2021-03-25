@@ -1,4 +1,4 @@
-module github.com/tamarakaufler/go-authenticate
+module github.com/tamarakaufler/go-authorize
 
 go 1.16
 

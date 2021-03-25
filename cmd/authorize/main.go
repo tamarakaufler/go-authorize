@@ -125,8 +125,8 @@ func main() {
 	fmt.Printf("\nApplication Starting: %s...\n\n", host)
 
 	router := mux.NewRouter()
-	router.HandleFunc("/authenticate", authHandler).Methods("POST")
-	router.HandleFunc("/users/{username}/creds", tokenValidationMiddleware(users)).Methods("GET")
+	router.HandleFunc("/authorize", authHandler).Methods("POST")
+	router.HandleFunc("/users/{username}/articles", tokenValidationMiddleware(users)).Methods("GET")
 
 	if err := http.ListenAndServe(":8888", router); err != http.ErrServerClosed {
 		log.Fatalf("error while listening: %s\n", err.Error())

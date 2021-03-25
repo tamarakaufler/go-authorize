@@ -8,15 +8,17 @@ func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
-	_ = x[SigningMethod-1000]
-	_ = x[ParsingJWT-1001]
-	_ = x[UserMatch-1002]
-	_ = x[InvalidToken-1003]
+	_ = x[SigningMethodError-1000]
+	_ = x[EncodingError-1001]
+	_ = x[DecodingError-1002]
+	_ = x[ParsingJWTError-1003]
+	_ = x[UserMatchError-1004]
+	_ = x[InvalidTokenError-1005]
 }
 
-const _Code_name = "SigningMethodParsingJWTUserMatchInvalidToken"
+const _Code_name = "SigningMethodErrorEncodingErrorDecodingErrorParsingJWTErrorUserMatchErrorInvalidTokenError"
 
-var _Code_index = [...]uint8{0, 13, 23, 32, 44}
+var _Code_index = [...]uint8{0, 18, 31, 44, 59, 73, 90}
 
 func (i Code) String() string {
 	i -= 1000

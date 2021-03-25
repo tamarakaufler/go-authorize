@@ -4,8 +4,10 @@ package error
 type Code int
 
 const (
-	SigningMethod Code = iota + 1000
-	ParsingJWT
-	UserMatch
-	InvalidToken
+	SigningMethodError Code = iota + 1000
+	EncodingError
+	DecodingError
+	ParsingJWTError
+	UserMatchError
+	InvalidTokenError
 )

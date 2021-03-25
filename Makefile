@@ -1,5 +1,5 @@
 generate:
-	go get golang.org/x/tools/cmd/stringer
+	go get -u golang.org/x/tools/cmd/stringer
 	go generate ./...
 
 deps:

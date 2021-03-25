@@ -38,11 +38,12 @@ or
 Visual Studio IDE REST Client plugin is used to easily check the service
 endpoints.
 
-The plugin test setup is in api-test/test.http file. 
+The plugin test setup is in `api-test/test.http` file. 
 
 ## Usage
 
 - start running the HTTP server using `make run`
-- go to api-test/test.http and run:
+- go to `api-test/test.http` and run:
+
     a) POST {{scheme}}://{{hostname}}/authoriz2
     b) GET {{scheme}}://{{hostname}}/users/{{user}}/article

@@ -62,6 +62,7 @@ func authHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	w.Header().Set("Authorization", fmt.Sprintf("Bearer %s", tokS))
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(JWTToken{
 		Token:     tokS,

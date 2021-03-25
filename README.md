@@ -17,7 +17,7 @@ http://localhost:8080/users/{username}/articles
     middleware, use of error message and code to identify encountered
     problems
 
-Implementation uses:
+## Implementation
 
 - enum generation using go generate tool and stringer
 - JWT creation and verification

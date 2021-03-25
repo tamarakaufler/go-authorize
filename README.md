@@ -42,8 +42,8 @@ The plugin test setup is in `api-test/test.http` file.
 
 ## Usage
 
-- start running the HTTP server using `make run`
-- go to `api-test/test.http` and run:
+1. start running the HTTP server using `make run`
+2. go to `api-test/test.http` and run:
 
     a) POST {{scheme}}://{{hostname}}/authorize
 

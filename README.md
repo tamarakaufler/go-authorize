@@ -5,11 +5,14 @@ Go implementation
 
 Implementation of a RESTful service with two APIs:
 
-- http://localhost:8080/authorize                  
+- http://localhost:8080/authorize
+
     creates a JWT token and provides
     it in the autorization header and
     in the response
+
 - http://localhost:8080/users/{username}/articles
+
     example of using JWT verifying
     middleware, uses error message and code to identify encountered
     problems

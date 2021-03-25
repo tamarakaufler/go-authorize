@@ -1,0 +1,25 @@
+@scheme = http
+#@scheme = https
+@hostname = localhost:8888
+@contentType = application/json
+@username = "tamara"
+@password = "lucien"
+
+# @name authRequest
+POST {{scheme}}://{{hostname}}/authorize
+Content-Type: {{contentType}}
+
+{
+    "username": {{username}},
+    "password": {{password}}
+}
+
+###
+@token = {{authRequest.response.body.$.access_token}}
+@user = tamara
+
+###
+# @name credsRequest
+GET {{scheme}}://{{hostname}}/users/{{user}}/articles
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
